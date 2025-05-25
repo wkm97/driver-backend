@@ -6,7 +6,7 @@ let database: Db | null = null
 export const connectDB = async () => {
   if (!database) {
     const client = new MongoClient(process.env.MONGODB_URI || '')
-    database = await client.db('test_database')
+    database = await client.db('driver_db')
   }
 
   return database

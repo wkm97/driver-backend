@@ -1,49 +1,28 @@
 import express, { Request } from 'express';
-import { connectDB, setupDB } from './database';
+import { connectDB, setupDB } from './utilities/database';
+import { updateDriverLocationQueue } from './utilities/queue';
+import locationRoutes from './routers/location'
 
-interface UpdateDriverLocationBody {
-  driver_id: string
-  latitude: number
-  longitude: number
-}
+const port = process.env.PORT || 3000;
+const BATCH_SIZE = 50
+const BATCH_INTERVAL = 1000 // milliseconds
 
 const app = express();
-const port = process.env.PORT || 3000;
-
 app.use(express.json());
 
-app.get('/location', async (req: Request, res) => {
-  const { driver_id } = req.query
-  const db = await connectDB()
-  const result = await db.collection('driver_locations').findOne({ driver_id: driver_id }, { sort: { timestamp: -1 } })
-  console.log(`Fetched location for ${driver_id}.`)
-  res.status(200).send(result)
-})
+app.use('/location', locationRoutes)
 
-app.post('/location', async (req: Request<{}, {}, UpdateDriverLocationBody>, res) => {
-  const { latitude, longitude, driver_id } = req.body;
-
-  if (latitude === undefined || longitude === undefined || driver_id === undefined) {
-    res.status(400).send({ msg: 'Missing latitude, longitude, or driver_id' });
-    return
+const processDriverLocationUpdates = async () => {
+  const payloads = updateDriverLocationQueue.dequeue(BATCH_SIZE)
+  if (payloads.length) {
+    const db = await connectDB()
+    const result = await db.collection('driver_locations').insertMany(payloads)
+    console.log(`Batch inserted: ${result.insertedCount}`)
   }
-
-  const db = await connectDB()
-  await db.collection('driver_locations').insertOne({
-    driver_id: driver_id,
-    timestamp: new Date(),
-    location: {
-      type: "Point",
-      coordinates: [longitude, latitude]
-    }
-  })
-
-  console.log(`Received location update for driver ${driver_id}: Latitude ${latitude}, Longitude ${longitude}`);
-
-  res.status(200).send({ msg: 'Location received' });
-});
+}
 
 app.listen(port, async () => {
   console.log(`Server running on port ${port}`);
   await setupDB()
+  setInterval(processDriverLocationUpdates, BATCH_INTERVAL)
 });
