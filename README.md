@@ -15,3 +15,11 @@ npm run simulation
 Promise.all(driverLocations.map(location => setTimeout(()=> console.log(location), location.time_offset_sec * 1000)))
 ```
 - Noticed the bold `Sequentially and synchronously send`, so I group them by driver and have a `createDriverSimulation` to do it sequentially and synchronously.
+
+## Task 2
+- Use typescript with expressjs for the POST /location endpoint
+- Modify the script in Task 1 to send request over to the POST endpoint
+
+## Task 3
+- Use MongoDB as the database, driver locations will be structured as time series data and utilise the MongoDB time series feature
+- Create a GET endpoint to retrieve the latest driver location

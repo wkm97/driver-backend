@@ -42,6 +42,7 @@ const createDriverSimulation = async (locations: DriverLocation[]) => {
     await sleep((location.time_offset_sec - timer) * 1000)
     timer = location.time_offset_sec
     await update(location)
+    console.log(`Location Updated for driver ${location.driver_id}: Latitude ${location.latitude}, Longitude ${location.longitude}`);
   }
 }
 
