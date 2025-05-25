@@ -1,14 +1,22 @@
-import express, { Request } from 'express';
+import express from 'express';
 import { connectDB, setupDB } from './utilities/database';
 import { updateDriverLocationQueue } from './utilities/queue';
 import locationRoutes from './routers/location'
+import { hmacAuthenticationMiddleware } from './utilities/hmac-authentication';
 
 const port = process.env.PORT || 3000;
+const secretKey = process.env.APP_SECRET
 const BATCH_SIZE = 50
 const BATCH_INTERVAL = 1000 // milliseconds
 
 const app = express();
 app.use(express.json());
+
+if (secretKey) {
+  app.use(hmacAuthenticationMiddleware(secretKey))
+} else {
+  throw new Error('Authentication missing APP_SECRET env variable')
+}
 
 app.use('/location', locationRoutes)
 

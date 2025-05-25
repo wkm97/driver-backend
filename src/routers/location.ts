@@ -16,7 +16,11 @@ router.get('/', async (req, res) => {
   const result = await db.collection('driver_locations').findOne({ driver_id: driver_id }, { sort: { timestamp: -1 } })
 
   console.log(`Fetched location for ${driver_id}.`)
-  res.status(200).send(result)
+  if (result) {
+    res.status(200).send({ result })
+  } else {
+    res.status(404).send({ result })
+  }
 })
 
 router.post('/', async (req: Request<{}, {}, UpdateDriverLocationBody>, res) => {
@@ -44,7 +48,11 @@ router.get('/historical', async (req, res) => {
   const { driver_id } = req.query
   const db = await connectDB()
   const results = await db.collection('driver_locations').find({ driver_id: driver_id }, { sort: { timestamp: 1 } }).toArray()
-  res.status(200).send({ results })
+  if (results.length > 0) {
+    res.status(200).send({ results })
+  } else {
+    res.status(404).send({ results })
+  }
 })
 
 export default router

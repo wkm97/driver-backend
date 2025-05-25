@@ -26,6 +26,7 @@ Promise.all(driverLocations.map(location => setTimeout(()=> console.log(location
 ## Task 2
 - Use typescript with expressjs for the POST /location endpoint
 - Modify the script in Task 1 to send request over to the POST endpoint
+- (OPTIONAL) added authentication for this endpoint using HMAC authentication to verify only ingestion from simulation
 
 ## Task 3
 - Use MongoDB as the database, driver locations will be structured as time series data and utilise the MongoDB time series feature

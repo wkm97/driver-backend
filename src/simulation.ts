@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { generateHmac } from './utilities/hmac-authentication';
 
 interface DriverLocation {
   driver_id: string;
@@ -8,6 +9,7 @@ interface DriverLocation {
   time_offset_sec: number;
 }
 
+const secretKey = process.env.APP_SECRET || '';
 const filePath = path.join(__dirname, '../resources/driver_location_log.json');
 const rawData = fs.readFileSync(filePath, 'utf8');
 const driverLocations: DriverLocation[] = JSON.parse(rawData);
@@ -30,6 +32,11 @@ const createDriverSimulation = async (locations: DriverLocation[]) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      "x-signature": generateHmac(JSON.stringify({
+        driver_id: location.driver_id,
+        latitude: location.latitude,
+        longitude: location.longitude
+      }), secretKey)
     },
     body: JSON.stringify({
       driver_id: location.driver_id,
@@ -41,8 +48,12 @@ const createDriverSimulation = async (locations: DriverLocation[]) => {
   for (const location of locations) {
     await sleep((location.time_offset_sec - timer) * 1000)
     timer = location.time_offset_sec
-    await update(location)
-    console.log(`Location Updated for driver ${location.driver_id}: Latitude ${location.latitude}, Longitude ${location.longitude}`);
+    const response = await update(location)
+    if (response.ok) {
+      console.log(`Location Updated for driver ${location.driver_id}: Latitude ${location.latitude}, Longitude ${location.longitude}`);
+    } else {
+      console.error(await response.json())
+    }
   }
 }
 
