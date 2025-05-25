@@ -29,8 +29,9 @@ Promise.all(driverLocations.map(location => setTimeout(()=> console.log(location
 - (OPTIONAL) added authentication for this endpoint using HMAC authentication to verify only ingestion from simulation
 
 ## Task 3
+- Found this as reference because it have the similar use case: https://www.mongodb.com/community/forums/t/optimizing-data-ingestion-for-high-frequency-iot-sensors-in-mongodb-time-series-database/254983/2
 - Use MongoDB as the database, driver locations will be structured as time series data and utilise the MongoDB time series feature
-- Create a GET /location endpoint to retrieve the latest driver location: http://localhost:3000/location?driver_id=driver_001
+- Create a GET /location endpoint to retrieve the latest driver location based on `driver_id`: http://localhost:3000/location?driver_id=driver_001
 - Handle high-frequency updates without performance degradation
     - use asynchronous processing on endpoint
     - use queue to keep track of the update request
@@ -39,4 +40,4 @@ Promise.all(driverLocations.map(location => setTimeout(()=> console.log(location
     - thinking of using `timestamp` sent from device (simulation) to keep track of latest data
     - only ingest data with the latest timestamp
     - but limited by the restriction that I can ONLY receive latitude, longitude and driver_id values sent from the drivers' phones
-- Create a GET /location/historical endpoint to retrieve the driver historical location from the start to the end: http://localhost:3000/location/historical?driver_id=driver_001
+- Create a GET /location/historical endpoint to retrieve the driver historical location based on `driver_id, start, end` query: http://localhost:3000/location/historical?driver_id=driver_001
